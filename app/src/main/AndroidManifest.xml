@@ -15,10 +15,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PetAdoption"
         tools:targetApi="31">
-
-        <activity android:name=".PetDetailActivity" android:parentActivityName=".PetListActivity" />
-        <activity android:name=".AddPetActivity" android:parentActivityName=".PetListActivity" />
-
+        <activity
+            android:name=".MyAdoptionsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PetDetailActivity"
+            android:parentActivityName=".PetListActivity" />
+        <activity
+            android:name=".AddPetActivity"
+            android:parentActivityName=".PetListActivity" />
         <activity android:name=".PetListActivity" />
         <activity android:name=".RegisterActivity" />
         <activity

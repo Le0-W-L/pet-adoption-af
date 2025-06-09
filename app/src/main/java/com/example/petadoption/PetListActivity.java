@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -23,9 +24,10 @@ public class PetListActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<Pet> petList = new ArrayList<>();
     private PetAdapter adapter;
-    private FirebaseAuth mAuth; // Novo
+    private FirebaseAuth mAuth;
 
-    private FloatingActionButton fabAddPet, fabLogout; // Novos
+    // Adicione a variável para o novo botão
+    private FloatingActionButton fabAddPet, fabLogout, fabMyAdoptions;
 
     private static final String TAG = "PetListActivity";
 
@@ -34,10 +36,15 @@ public class PetListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pet_list);
 
-        mAuth = FirebaseAuth.getInstance(); // Novo
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
+        mAuth = FirebaseAuth.getInstance();
+
+        // Encontre os 3 botões
         fabAddPet = findViewById(R.id.fab_add_pet);
         fabLogout = findViewById(R.id.fab_logout);
+        fabMyAdoptions = findViewById(R.id.fab_my_adoptions); // Novo
         recyclerPets = findViewById(R.id.recyclerPets);
 
         recyclerPets.setLayoutManager(new LinearLayoutManager(this));
@@ -45,39 +52,42 @@ public class PetListActivity extends AppCompatActivity {
         recyclerPets.setAdapter(adapter);
 
         db = FirebaseFirestore.getInstance();
-        carregarPets(); // Chamando método separado
+        carregarPetsDisponiveis();
 
         // Ação do botão Adicionar
-        fabAddPet.setOnClickListener(v -> {
-            startActivity(new Intent(this, AddPetActivity.class));
-        });
+        fabAddPet.setOnClickListener(v -> startActivity(new Intent(this, AddPetActivity.class)));
 
         // Ação do botão Logout
         fabLogout.setOnClickListener(v -> {
             mAuth.signOut();
             Intent intent = new Intent(this, LoginActivity.class);
-            // Limpa o histórico de telas para que o usuário não possa "voltar" para a tela de lista
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         });
+
+        // Ação do NOVO botão Minhas Adoções
+        fabMyAdoptions.setOnClickListener(v -> {
+            startActivity(new Intent(this, MyAdoptionsActivity.class));
+        });
     }
 
-    private void carregarPets() {
-        db.collection("pets").addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.w(TAG, "Listen failed.", error);
-                Toast.makeText(PetListActivity.this, "Erro ao carregar pets", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            petList.clear();
-            for (QueryDocumentSnapshot doc : value) {
-                if (doc != null) {
-                    Pet pet = doc.toObject(Pet.class);
-                    petList.add(pet);
-                }
-            }
-            adapter.notifyDataSetChanged();
-        });
+    private void carregarPetsDisponiveis() {
+        db.collection("pets")
+                .whereEqualTo("adotado", false)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.w(TAG, "Listen failed.", error);
+                        Toast.makeText(PetListActivity.this, "Erro ao carregar pets. Verifique o Logcat.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    petList.clear();
+                    for (QueryDocumentSnapshot doc : value) {
+                        if (doc != null) {
+                            Pet pet = doc.toObject(Pet.class);
+                            petList.add(pet);
+                        }
+                    }
+                    adapter.notifyDataSetChanged();
+                });
     }
 }
