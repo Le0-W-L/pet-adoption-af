@@ -34,4 +34,13 @@
         android:layout_height="wrap_content"
         android:text="Cadastrar"
         android:layout_marginTop="16dp" />
+
+    <TextView
+        android:id="@+id/tvFazerLogin"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Já tem uma conta? Faça login"
+        android:textColor="#007BFF"
+        android:layout_marginTop="16dp" />
+
 </LinearLayout>

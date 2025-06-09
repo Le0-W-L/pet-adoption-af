@@ -5,6 +5,9 @@ public class Usuarios {
     private String nome;
     private String email;
 
+    // Construtor vazio é obrigatório para o Firestore
+    public Usuarios() {}
+
     public Usuarios(String nome, String email) {
         this.nome = nome;
         this.email = email;

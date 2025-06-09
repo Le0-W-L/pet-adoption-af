@@ -1,7 +1,5 @@
 package com.example.petadoption;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
@@ -37,6 +35,12 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        // Checa se o usuário já está logado ao abrir o app
+        if (mAuth.getCurrentUser() != null) {
+            startActivity(new Intent(this, PetListActivity.class));
+            finish();
+        }
+
         btnLogin.setOnClickListener(v -> {
             String email = editEmail.getText().toString();
             String senha = editSenha.getText().toString();
@@ -44,11 +48,12 @@ public class LoginActivity extends AppCompatActivity {
             if (!email.isEmpty() && !senha.isEmpty()) {
                 mAuth.signInWithEmailAndPassword(email, senha)
                         .addOnSuccessListener(authResult -> {
-                            startActivity(new Intent(this, AddPetActivity.class));
+                            // Alterado para ir para a lista de pets
+                            startActivity(new Intent(this, PetListActivity.class));
                             finish();
                         })
                         .addOnFailureListener(e ->
-                                Toast.makeText(this, "Erro no login: " + e, Toast.LENGTH_LONG).show());
+                                Toast.makeText(this, "Erro no login: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
 
