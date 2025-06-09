@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -14,7 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.FirebaseFirestore; // Alterado
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -29,6 +28,7 @@ public class AddPetActivity extends AppCompatActivity {
     private Button btnEscolherImagem, btnCadastrar;
 
     private Uri imageUriSelecionada;
+    private FirebaseFirestore db; // Adicionado
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +41,8 @@ public class AddPetActivity extends AppCompatActivity {
         imagePet = findViewById(R.id.imagePreview);
         btnEscolherImagem = findViewById(R.id.btnSelecionarImagem);
         btnCadastrar = findViewById(R.id.btnCadastrarPet);
+
+        db = FirebaseFirestore.getInstance(); // Instância do Cloud Firestore
 
         btnEscolherImagem.setOnClickListener(view -> escolherImagem());
         btnCadastrar.setOnClickListener(view -> cadastrarPet());
@@ -73,6 +75,7 @@ public class AddPetActivity extends AppCompatActivity {
         int idade = Integer.parseInt(idadeStr);
         String donoId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        // 1. Faz o upload da imagem para o Firebase Storage
         StorageReference ref = FirebaseStorage.getInstance().getReference()
                 .child("images_pets/" + UUID.randomUUID().toString());
 
@@ -80,12 +83,19 @@ public class AddPetActivity extends AppCompatActivity {
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl().addOnSuccessListener(uri -> {
                     String imageUrl = uri.toString();
 
-                    Pet pet = new Pet(nome, idade, raca, imageUrl, donoId, false, "");
+                    // 2. Cria o objeto Pet
+                    Pet pet = new Pet();
+                    pet.setNome(nome);
+                    pet.setIdade(idade);
+                    pet.setRaca(raca);
+                    pet.setImagemUrl(imageUrl); // Usando o setter
+                    pet.setDonoId(donoId);
+                    pet.setAdotado(false);
+                    pet.setAdotadoPorId("");
 
-                    FirebaseDatabase.getInstance().getReference("pets")
-                            .push()
-                            .setValue(pet)
-                            .addOnSuccessListener(unused -> {
+                    // 3. Salva o objeto no Cloud Firestore
+                    db.collection("pets").add(pet) // Alterado
+                            .addOnSuccessListener(documentReference -> {
                                 Toast.makeText(this, "Pet cadastrado com sucesso!", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(this, PetListActivity.class));
                                 finish();

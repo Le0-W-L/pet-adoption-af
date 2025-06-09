@@ -1,6 +1,7 @@
 package com.example.petadoption;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,11 +35,25 @@ public class PetAdapter extends RecyclerView.Adapter<PetAdapter.MyViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Pet pet = lista.get(position);
-        holder.nome.setText(pet.nome);
 
-        if (pet.imagemUrl != null && !pet.imagemUrl.isEmpty()) {
-            Glide.with(context).load(pet.imagemUrl).into(holder.imagem);
+        holder.nome.setText(pet.getNome());
+
+        String descricao = "Raça: " + pet.getRaca() + ", Idade: " + pet.getIdade() + " anos";
+        holder.desc.setText(descricao);
+
+        if (pet.getImagemUrl() != null && !pet.getImagemUrl().isEmpty()) {
+            Glide.with(context).load(pet.getImagemUrl()).into(holder.imagem);
+        } else {
+            holder.imagem.setImageResource(R.mipmap.ic_launcher);
         }
+
+        // Adicionando o OnClickListener ao item da lista
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, PetDetailActivity.class);
+            // Passa o ID do documento do pet para a próxima tela
+            intent.putExtra("PET_ID", pet.getId());
+            context.startActivity(intent);
+        });
     }
 
     @Override
